@@ -2,7 +2,8 @@
 grpc golang demo
 
 
-## How to generate  service definitions with protobuf (Ensure [taskfile](https://taskfile.dev/) is installed)
+## How to generate  service definitions with protobuf
+(Ensure [taskfile](https://taskfile.dev/) is installed)
 
 ```shell
 task proto

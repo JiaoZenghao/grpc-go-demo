@@ -21,8 +21,15 @@ func StartGrpcServer() {
 
 	grpcServer := grpc.NewServer()
 
+	registerService(grpcServer)
+
+	grpcServer.Serve(lis)
+
+}
+
+func registerService(grpcServer *grpc.Server) {
+
 	product.RegisterProductServiceServer(grpcServer, prdSrv.NewProductServer())
 	user.RegisterUserServiceServer(grpcServer, userSrv.NewUserServer())
-	grpcServer.Serve(lis)
 
 }
