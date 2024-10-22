@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"jiaozenghao.gmail.com/grpc-go-demo/cmd/server"
+)
 
 func main() {
-	fmt.Println("Just begin")
+	server.StartGrpcServer()
 }

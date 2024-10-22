@@ -6,9 +6,9 @@ tasks:
     cmds:
       - for: ["product", "user"]
         cmd: |
-          mkdir -p ./internal/service/proto/{{ .ITEM }} && \
-          protoc --go_out=./internal/service/proto/{{ .ITEM }} \
+          mkdir -p ./internal/service/{{ .ITEM }} && \
+          protoc --go_out=./internal/service/{{ .ITEM }} \
           --go_opt=paths=source_relative \
-          --go-grpc_out=./internal/service/proto/{{ .ITEM }} \
+          --go-grpc_out=./internal/service/{{ .ITEM }} \
           --go-grpc_opt=paths=source_relative \
           ./proto/{{ .ITEM }}.proto
