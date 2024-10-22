@@ -20,7 +20,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ProductService_GetProduct_FullMethodName = "/product.ProductService/GetProduct"
+	ProductService_GetProduct_FullMethodName     = "/product.ProductService/GetProduct"
+	ProductService_GetProductList_FullMethodName = "/product.ProductService/GetProductList"
 )
 
 // ProductServiceClient is the client API for ProductService service.
@@ -28,6 +29,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProductServiceClient interface {
 	GetProduct(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (*Product, error)
+	GetProductList(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Product], error)
 }
 
 type productServiceClient struct {
@@ -48,11 +50,31 @@ func (c *productServiceClient) GetProduct(ctx context.Context, in *wrapperspb.St
 	return out, nil
 }
 
+func (c *productServiceClient) GetProductList(ctx context.Context, in *wrapperspb.StringValue, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Product], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &ProductService_ServiceDesc.Streams[0], ProductService_GetProductList_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[wrapperspb.StringValue, Product]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ProductService_GetProductListClient = grpc.ServerStreamingClient[Product]
+
 // ProductServiceServer is the server API for ProductService service.
 // All implementations must embed UnimplementedProductServiceServer
 // for forward compatibility.
 type ProductServiceServer interface {
 	GetProduct(context.Context, *wrapperspb.StringValue) (*Product, error)
+	GetProductList(*wrapperspb.StringValue, grpc.ServerStreamingServer[Product]) error
 	mustEmbedUnimplementedProductServiceServer()
 }
 
@@ -65,6 +87,9 @@ type UnimplementedProductServiceServer struct{}
 
 func (UnimplementedProductServiceServer) GetProduct(context.Context, *wrapperspb.StringValue) (*Product, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProduct not implemented")
+}
+func (UnimplementedProductServiceServer) GetProductList(*wrapperspb.StringValue, grpc.ServerStreamingServer[Product]) error {
+	return status.Errorf(codes.Unimplemented, "method GetProductList not implemented")
 }
 func (UnimplementedProductServiceServer) mustEmbedUnimplementedProductServiceServer() {}
 func (UnimplementedProductServiceServer) testEmbeddedByValue()                        {}
@@ -105,6 +130,17 @@ func _ProductService_GetProduct_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProductService_GetProductList_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(wrapperspb.StringValue)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ProductServiceServer).GetProductList(m, &grpc.GenericServerStream[wrapperspb.StringValue, Product]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type ProductService_GetProductListServer = grpc.ServerStreamingServer[Product]
+
 // ProductService_ServiceDesc is the grpc.ServiceDesc for ProductService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -117,6 +153,12 @@ var ProductService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ProductService_GetProduct_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetProductList",
+			Handler:       _ProductService_GetProductList_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "proto/product.proto",
 }

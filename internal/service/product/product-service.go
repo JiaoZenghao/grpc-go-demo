@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"log"
 
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -26,6 +29,26 @@ func (s *ProductServer) GetProduct(_ context.Context, in *wrapperspb.StringValue
 	}
 
 	return nil, status.Errorf(codes.NotFound, "No record found.")
+}
+
+func (s *ProductServer) GetProductList(in *wrapperspb.StringValue, stream grpc.ServerStreamingServer[pb.Product]) error {
+
+	log.Print("Get request with value: " + in.Value)
+	productMap := s.productMap
+	for key, product := range productMap {
+		log.Print(key, product)
+		err := stream.Send(product)
+		if err != nil {
+
+			return fmt.Errorf("error sending message to stream : %v",
+				err)
+
+		}
+		log.Print("Sending Product Found : " + key)
+
+	}
+
+	return nil
 }
 
 func NewProductServer() *ProductServer {
