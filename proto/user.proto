@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+import "google/protobuf/wrappers.proto";
+
+option go_package = "jiaozenghao.gmail.com/grpc-go-demo/user";
+
+package user;
+
+
+service UserService {
+    rpc GetUser(google.protobuf.StringValue) returns (User) {}
+}
+
+
+
+message User {
+    string id =1;
+    string name=2;
+}
