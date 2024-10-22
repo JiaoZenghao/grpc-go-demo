@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   proto:
@@ -12,3 +12,7 @@ tasks:
           --go-grpc_out=./internal/service/{{ .ITEM }} \
           --go-grpc_opt=paths=source_relative \
           ./proto/{{ .ITEM }}.proto
+  build:
+    desc: build exectuable package
+    cmds:
+      - go build -v -o grpc-demo ./cmd/main.go
